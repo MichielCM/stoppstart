@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+	<!-- episode -->
+	<xs:complexType name="episode-type">
+		<xs:complexContent>
+			<!-- episodes contain one or more terminology elements -->
+			<xs:extension base="terminology-base-type">
+				<xs:sequence>
+					<!-- episodes optionally contain frequency, duration, and status elements -->
+					<xs:element name="frequency" type="number-interval-type" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="duration" type="number-interval-type" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="status" type="status-type" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+				<!-- episodes' negative attribute determines whether it should or should not be registered -->
+				<xs:attribute name="negative" type="xs:boolean" default="false"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- medicine -->
+	<xs:complexType name="medicine-type">
+		<xs:complexContent>
+			<!-- medicines contain one or more terminology elements -->
+			<xs:extension base="terminology-base-type">
+				<xs:sequence>
+					<!-- medicines optionally contain frequency, duration, dose, and status elements -->
+					<xs:element name="frequency" type="number-interval-type" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="duration" type="number-interval-type" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="dose" type="dose-type" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="status" type="status-type" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+				<!-- medicines' negative attribute determines whether it should or should not be registered -->
+				<xs:attribute name="negative" type="xs:boolean" default="false"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- measurement -->
+	<xs:complexType name="measurement-type">
+		<xs:complexContent>
+			<!-- measurements contain one or more terminology elements -->
+			<xs:extension base="terminology-base-type">
+				<xs:sequence>
+					<!-- measurements optionally contain age and result elements -->
+					<xs:element name="age" type="number-interval-type" minOccurs="0" maxOccurs="1"/>
+					<xs:element name="result" type="result-type" minOccurs="0" maxOccurs="1"/>
+				</xs:sequence>
+				<!-- measurements' negative attribute determines whether it should or should not be registered -->
+				<xs:attribute name="negative" type="xs:boolean" default="false"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- terminology-base-type specifies terminology element -->
+	<xs:complexType name="terminology-base-type">
+		<xs:sequence>
+			<!-- terminology can appear twice: once to specify included values, and once to specify excluded values -->
+			<xs:element name="terminology" minOccurs="1" maxOccurs="2">
+				<xs:complexType>
+					<!-- terminologies contain a single values element -->
+					<xs:sequence>
+						<xs:element name="values" type="values-type"/>
+					</xs:sequence>
+					<!-- terminologies' name specifies the terminology used and is one of a finite list of values -->
+					<xs:attribute name="name" use="required">
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="icpc1nl"/> <!-- Dutch ICPC version 1 -->
+								<xs:enumeration value="icpc2"/> <!-- ICPC 2 -->
+								<xs:enumeration value="icd9"/> <!-- ICD 9 -->
+								<xs:enumeration value="icd10"/> <!-- ICD 10 -->
+								<xs:enumeration value="atc"/> <!-- ATC -->
+								<xs:enumeration value="loinc"/> <!-- LOINC -->
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<!-- status -->
+	<xs:complexType name="status-type">
+		<!-- active specifies whether or not episodes or medicines should be open -->
+		<xs:attribute name="active" type="xs:boolean" default="true"/>
+	</xs:complexType>
+	
+	<!-- number interval is used for time indications -->
+	<xs:complexType name="number-interval-type">
+		<xs:sequence>
+			<!-- number intervals contain a single values element -->
+			<xs:element name="values" type="values-type"/>
+		</xs:sequence>
+		<!-- number intervals' interval specifies the time interval and is one of a finite list of values -->
+		<xs:attribute name="interval" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="Y"/> <!-- year -->
+					<xs:enumeration value="M"/> <!-- month -->
+					<xs:enumeration value="W"/> <!-- week -->
+					<xs:enumeration value="D"/> <!-- day -->
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	
+	<!-- dose -->
+	<xs:complexType name="dose-type">
+		<xs:complexContent>
+			<!-- doses inherit number interval to specify their frequency of use -->
+			<xs:extension base="number-interval-type">
+				<!-- doses' unit specifies the dose unit and is one of a finite list of values -->
+				<xs:attribute name="unit" use="required">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="G"/> <!-- grams -->
+							<xs:enumeration value="MG"/> <!-- milligrams -->
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<!-- result -->
+	<xs:complexType name="result-type">
+		<xs:sequence>
+			<!-- results contain a single values element -->
+			<xs:element name="values" type="values-type"/>
+		</xs:sequence>
+		<!-- results' unit optionally specifies the unit of measurement -->
+		<xs:attribute name="unit" type="xs:string"/>
+	</xs:complexType>
+	
+	<!-- values -->
+	<xs:complexType name="values-type">
+		<xs:sequence>
+			<!-- values contains one or more value elements specifying matching values -->
+			<xs:element name="value" minOccurs="1" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<!-- values' regex specifies whether or not a value should be matched as a regular expression or as a string -->
+							<xs:attribute name="regex" type="xs:boolean" default="false"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<!-- values' operator specifies how a value should match and is one of a finite list of values -->
+		<xs:attribute name="operator" use="required">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="="/> <!-- equals -->
+					<xs:enumeration value="!="/> <!-- does not equal -->
+					<xs:enumeration value="&gt;"/> <!-- is greater than -->
+					<xs:enumeration value="&lt;"/> <!-- is less than -->
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	
+	<!-- root node -->
+	<xs:element name="rules">
+		<xs:complexType>
+			<xs:sequence>
+				<!-- every rule is specified through a rule element -->
+				<xs:element name="rule" minOccurs="0" maxOccurs="unbounded">
+					<xs:complexType>
+						<xs:sequence>
+							<!-- all rules contain a description, which contains an attribute specifying its language -->
+							<xs:element name="description">
+								<xs:complexType>
+									<xs:simpleContent>
+										<xs:extension base="xs:string">
+											<xs:attribute name="language" type="xs:language" use="required"/>
+										</xs:extension>
+									</xs:simpleContent>
+								</xs:complexType>
+							</xs:element>
+							<!-- all rules have one ore more iterations, containing their different ICD/ICPC specifications and priorities -->
+							<xs:element name="iteration" minOccurs="1" maxOccurs="unbounded">
+								<xs:complexType>
+									<xs:sequence>
+										<!-- iterations consist of zero or more conditions -->
+										<xs:element name="condition" minOccurs="0" maxOccurs="unbounded">
+											<xs:complexType>
+												<!-- conditions contain an episode, a medicine, or a measurement element -->
+												<xs:choice>
+													<xs:element name="episode" type="episode-type"/>
+													<xs:element name="medicine" type="medicine-type"/>
+													<xs:element name="measurement" type="measurement-type"/>
+												</xs:choice>
+											</xs:complexType>
+										</xs:element>
+										<!-- iterations contain one ore more actions -->
+										<xs:element name="action" minOccurs="1" maxOccurs="unbounded">
+											<xs:complexType>
+												<!-- actions specify starting or stopping a specific medicine -->
+												<xs:choice>
+													<xs:element name="medicine" type="medicine-type"/>
+												</xs:choice>
+												<!-- actions contain a type attribute specifying either starting or stopping a medicine -->
+												<xs:attribute name="type">
+													<xs:simpleType>
+														<xs:restriction base="xs:string">
+															<xs:enumeration value="start"/>
+															<xs:enumeration value="stop"/>
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:attribute>
+											</xs:complexType>
+										</xs:element>
+									</xs:sequence>
+									<!-- iterations contain a priority indicating its preferred order or execution; the higher the number, the higher the priority -->
+									<xs:attribute name="priority" type="xs:int" use="required"/>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<!-- rules contain an id indicating its related STOPP / START criterion -->
+						<xs:attribute name="id" type="xs:string" use="required"/>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
